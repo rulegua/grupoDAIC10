@@ -6,3 +6,6 @@ El objetivo de este proyecto es facilitar el trabajo a los hosteleros frente a l
 
 ## Pre-requisitos 📋
 Python3
+Chronograf
+InfluxDB
+Kapacitor
