@@ -1,52 +1,73 @@
 import sys
+import time
 from grove.gpio import GPIO
 import time
+ 
 
-class SensorDistancia:
+class SensorDistancia(object):
+	
+	
+	def __init__(self, pin):
+		self.distancia = GPIO(pin)
+ 
+	def _get_distance(self):
+		usleep = lambda x: time.sleep(x / 1000000.0)
+ 
+		_TIMEOUT1 = 1000
+		_TIMEOUT2 = 10000
+	
+		self.distancia.dir(GPIO.OUT)
+		self.distancia.write(0)
+		usleep(2)
+		self.distancia.write(1)
+		usleep(10)
+		self.distancia.write(0)
+ 
+		self.distancia.dir(GPIO.IN)
 
+		t0 = time.time()
+		count = 0
+		while count < _TIMEOUT1:
+			if self.distancia.read():
+				break
+			count += 1
+		if count >= _TIMEOUT1:
+			return None
 
-	#Constructor de la clase Distancia
-	#Trigger: Numero del trigger que ocupa el sensor ultrasonico
-	#Echo: Numero del echo que ocupa el sensor ultrasonico
-	def __init__(self, trigger, echo):
-		self.trigger = trigger
-		self.echo = echo
-		
+		t1 = time.time()
+		count = 0
+		while count < _TIMEOUT2:
+			if not self.distancia.read():
+				break
+			count += 1
+		if count >= _TIMEOUT2:
+			return None
 
+		t2 = time.time()
 
-	#Funcion para obtener distancia a un objeto
-	def distancia(self):
-		
-		GPIO.setmode(GPIO.BCM)
-		GPIO.setup(self.trigger, GPIO.OUT)
-		GPIO.setup(self.echo, GPIO.IN)
-		
-		GPIO.output(self.trigger, False)
-		time.sleep(2)
-		
-		GPIO.output(self.trigger, True)
-		
-		time.sleep(0.00001)
-		
-		GPIO.output(self.trigger, False)
-		
-		StartTime = time.time()
-		StopTime = time.time()
-		
-		while GPIO.input(self.echo) == 0:
-			StartTime = time.time()
-		
-		while GPIO.input(self.echo) == 1:
-			StopTime = time.time()
-			
-			
-		TimeElapsed = StopTime - StartTime
-		
-		distance = TimeElapsed	/ 0.000058
-		distance = round(distance, 2)
-		
-		GPIO.cleanup()
-		
+		dt = int((t1 - t0) * 1000000)
+		if dt > 530:
+			return None
+
+		distance = ((t2 - t1) * 1000000 / 29 / 2)    # cm
+
 		return distance
-			
-			
+
+	def get_distance(self):
+		while True:
+			dist = self._get_distance()
+			if dist:
+				return dist
+ 
+
+ 
+# def main():
+	# sensor = sensorDistancia(5)
+ 
+    # print('Detecting distance...')
+    # while True:
+        # print('{} cm'.format(sensor.get_distance()))
+        # time.sleep(1)
+ 
+# if __name__ == '__main__':
+    # main()

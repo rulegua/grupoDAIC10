@@ -3,7 +3,6 @@ import presion
 import nivel
 import bocina
 import distancia
-
 import boton
 import time
 
@@ -14,47 +13,61 @@ import argparse
 
 
 def main(host='localhost', port=8086):
-
 	inicioJornada = time.time()
 	
 	"""Parametros para la BD"""
-    user = "Ruben"
-    password = "Ruben"
-    dbname = "SafeJoin"
-    
-    cliente = InfluxDBClient(host,port,user,password,dbname)
+	user = "Ruben"
+	password = "Ruben"
+	dbname = "SafeJoin"
+	
+	cliente = InfluxDBClient(host,port,user,password,dbname)
 	
 	"""Creamos la BD"""
 	cliente.create_database(dbname)
 	
 	contador = 0
+	temporal = time.time()
 	while True:	
 
-		finalJornada = Time.time()
+		finalJornada = time.time()
 
-		if((finalJornada - inicioJornada) >= 10)	#Numero en segundos
+		"""if((finalJornada - inicioJornada) >= 20)	#Numero en segundos
 			cliente.drop_database("SafeJoin")
-			break
+			break"""
 
 	    #Declaracion de sensores
-	    sensorNivel = nivel.SensorNivel(22) 	#Pin 22
-	    sensorPresion = presion.SensorPresion(24) 	#Pin 24
-	    # sensorLed = led.SensorLed(12) 		#Pin 12
-	    sensorBocina = bocina.SensorBocina(12)	#Pin 5
-	    sensorBoton = boton.SensorBoton(5)
+		sensorNivel = nivel.SensorNivel(22)				#Pin 22
+		sensorPresion = presion.SensorPresion(24) 		#Pin 24
+		sensorLed = led.SensorLed(12) 					#Pin 12
+		"""sensorDistancia = distancia.SensorDistancia(5)	#Pin 5
+		sensorBocina = bocina.SensorBocina(12)"""		
+		sensorBoton = boton.SensorBoton(5)
 	     
 	     
-	     #sensorBocina.apagar()
-	    #Caso de uso 1: Si no hay nadie en la mesa y
-	    # if(sensorPresion.presionado() == False):	#Aqui falta la condicion del sensor laser
-		# sensorLed.encender()
-		# print("Limpiando mesa...")
-		# time.sleep(5)
-		# sensorLed.apagar()
-		# print("Mesa limpia!")
+		#Caso de uso 1: Si no hay nadie en la mesa y
+		tiempoA = time.time()
+		tiempoB = temporal
+		temporal = None
+		if((sensorPresion.presionado() == False) and (tiempoA - tiempoB >= 6)):	#Aqui falta la condicion del sensor laser
+			sensorLed.encender()
+			print("Limpiando mesa...")
+			
+			mensaje = formato_json("mesa",1)
+			cliente.write_points(mensaje)
+			
+			time.sleep(5)
+			sensorLed.apagar()
+			print("Mesa limpia!")
+			
+			mensaje = formato_json("mesa", 0)
+			cliente.write_points(mensaje)
+			
+			tiempoB = time.time()
+			
+		temporal = tiempoB	
 		
-	    # #Caso de uso 2: Si no hay liquido desinfectante se avisa al encargado
-	    if(sensorNivel.comprobarNivel() == False):
+		#Caso de uso 2: Si no hay liquido desinfectante se avisa al encargado
+		if(sensorNivel.comprobarNivel() == False):
 			
 			#Enviar al chronograf una alerta
 			mensaje = formato_json("liquido", 0)
@@ -62,30 +75,41 @@ def main(host='localhost', port=8086):
 		else:
 			mensaje = formato_json("liquido", 1)
 			cliente.write_points(mensaje)
+		
+		#Caso de uso 3: Si la otra mesa esta demasiado cerca se activa la bocina
+		"""distSeguridad = 15 #Minimo 15 cm de separacion
+		distActual = sensorDistancia.get_distance()
+		
+		if(distActual < distSeguridad):
+			sensorBocina.encender()
+		
+		else:
+			sensorBocina.apagar()"""
 
 	    
-	    #Caso de uso 3: Si se supera el aforo del local se activa la bocina
-	    if(sensorBoton.estaPresionado() == True):
-		    contador += 1
-		     
-		    time.sleep(0.5)
-		    print(contador)
+		#Caso de uso 4: Si se supera el aforo del local se activa la bocina
+		if(sensorBoton.estaPresionado() == True):
+			contador += 1
+			time.sleep(0.5)
+			print(contador)
+			mensaje = formato_json("aforo", contador)
+			cliente.write_points(mensaje)
 
 	     
-	    if(contador > 3):
-		    sensorBocina.encender()
-		    time.sleep(2)
-	     
-		    print("Aforo actual: ")
-		    aforo = int(input())
-	     
-		    if(aforo <= 3):
+		"""if(contador > 3):
+			sensorBocina.encender()
+			time.sleep(2)
+		 
+			print("Aforo actual: ")
+			aforo = int(input())
+		 
+			if(aforo <= 3):
 				sensorBocina.apagar()
-				contador = aforo
+				contador = aforo"""
 
 
 
-#Tabla: Nombre de la tabla (aforo, líquido, mesa)
+#Tabla: Nombre de la tabla (aforo, liquido, mesa)
 #Cantidad: 0 o 1
 def formato_json(tabla, cantidad):
 	if(tabla == "aforo"):
@@ -109,7 +133,7 @@ def formato_json(tabla, cantidad):
             {
                 "measurement": "Liquido",               
                 "fields": {
-                    "Cantidad": string(estado),
+                    "Cantidad": int(cantidad),
                 }
             }
         ]
@@ -125,7 +149,7 @@ def formato_json(tabla, cantidad):
             {
                 "measurement": "Mesa",               
                 "fields": {
-                    "Estado": string(estado),
+                    "Estado": str(estado),
                 }
             }
         ]
@@ -150,5 +174,3 @@ if __name__ == '__main__':
      args = parse_args()
      main(host=args.host, port=args.port)
      
-# if __name__ == "__main__":
-    # main()
