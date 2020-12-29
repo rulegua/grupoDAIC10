@@ -13,7 +13,9 @@ class SensorNivel:
 	def comprobarNivel(self):
 		if self.nivel.read() == 1:
 			#Devuelve True si queda liquido 
+			print("Hay agua")
 			return True
 		else:
 			#Devuelve false si no queda liquido 
+			print("No hay agua")
 			return False
