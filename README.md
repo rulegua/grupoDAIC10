@@ -1,8 +1,7 @@
 # SafeJoin
 El objetivo de este proyecto es facilitar el trabajo a los hosteleros frente a las medidas de la COVID-19 mediante del uso del Internet de las Cosas (IoT). 
 
-* Autores: Rubén Legarreta y Roberto Martínez-Guisasola
-* Project status: working/prototype
+* Estado del proyecto: En desarrollo
 
 ## Pre-requisitos 📋
 * Python3
@@ -10,8 +9,19 @@ El objetivo de este proyecto es facilitar el trabajo a los hosteleros frente a l
 * InfluxDB
 * Kapacitor
 
-## Utilidades 📋
-* Medir distancia entre las mesas
-* Contabilizar el aforo del local
-* Detección del número de usuarios de una mesa
-* Limpieza automática de la mesa
+## Usabilidad 
+```bash
+git clone https://github.com/rulegua/grupoDAIC10.git
+```
+En la carpeta Proyecto/ ejecutar el siguiente comando:
+```bash
+python main.py
+```
+Para visualizar el monitoreo acceder a la dirección acceder al [link](http://localhost:8888/sources/1/dashboards/2?refresh=Paused&lower=now%28%29%20-%2015m)
+
+## Construido con 🛠️
+* [InfluxDB](https://www.influxdata.com/)
+
+## Autores
+* Rubén Legarreta - (https://github.com/rulegua)
+* Roberto Martínez-Guisasola - (https://github.com/Robertoguisasola)
