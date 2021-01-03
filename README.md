@@ -10,6 +10,7 @@ El objetivo de este proyecto es facilitar el trabajo a los hosteleros frente a l
 * Kapacitor
 
 ## Usabilidad 
+Clonar el repositorio:
 ```bash
 git clone https://github.com/rulegua/grupoDAIC10.git
 ```
