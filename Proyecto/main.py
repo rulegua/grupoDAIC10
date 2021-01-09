@@ -31,24 +31,26 @@ def main(host='localhost', port=8086):
 
 		finalJornada = time.time()
 
-		"""if((finalJornada - inicioJornada) >= 20)	#Numero en segundos
+		if((finalJornada - inicioJornada) >= 5):cd 	#Numero en segundos
 			cliente.drop_database("SafeJoin")
-			break"""
+			break
 
 	    #Declaracion de sensores
 		sensorNivel = nivel.SensorNivel(22)				#Pin 22
-		sensorPresion = presion.SensorPresion(24) 		#Pin 24
+		sensorPresionSilla = presion.SensorPresion(24) 		#Pin 24
+		sensorPresionMesa = presion.SensorPresion(26) 		#Pin 26
 		sensorLed = led.SensorLed(12) 					#Pin 12
-		"""sensorDistancia = distancia.SensorDistancia(5)	#Pin 5
-		sensorBocina = bocina.SensorBocina(12)"""		
-		sensorBoton = boton.SensorBoton(5)
+		sensorDistancia = distancia.SensorDistancia(5)	#Pin 5
+		sensorBocina = bocina.SensorBocina(16)	#Pin 16
+		#sensorBotonEntrada = boton.SensorBoton(18)	#Pin 18
+		#sensorBotonSalida = boton.SensorBoton(24) #Pin 24
 	     
 	     
-		#Caso de uso 1: Si no hay nadie en la mesa y
+		#Caso de uso 1: Si no hay nadie en la mesa ni nada encima de la mesa
 		tiempoA = time.time()
 		tiempoB = temporal
 		temporal = None
-		if((sensorPresion.presionado() == False) and (tiempoA - tiempoB >= 6)):	#Aqui falta la condicion del sensor laser
+		if((sensorPresionSilla.presionado() == False) and (sensorPresionMesa.presionado() == False) and (tiempoA - tiempoB >= 6)):
 			sensorLed.encender()
 			print("Limpiando mesa...")
 			
@@ -77,35 +79,36 @@ def main(host='localhost', port=8086):
 			cliente.write_points(mensaje)
 		
 		#Caso de uso 3: Si la otra mesa esta demasiado cerca se activa la bocina
-		"""distSeguridad = 15 #Minimo 15 cm de separacion
+		distSeguridad = 15 #Minimo 15 cm de separacion
 		distActual = sensorDistancia.get_distance()
 		
 		if(distActual < distSeguridad):
 			sensorBocina.encender()
 		
 		else:
-			sensorBocina.apagar()"""
+			sensorBocina.apagar()
 
 	    
-		#Caso de uso 4: Si se supera el aforo del local se activa la bocina
-		if(sensorBoton.estaPresionado() == True):
+		"""#Caso de uso 4: Si se supera el aforo del local se activa la bocina
+		if(sensorBotonEntrada.estaPresionado() == True):
 			contador += 1
 			time.sleep(0.5)
 			print(contador)
 			mensaje = formato_json("aforo", contador)
 			cliente.write_points(mensaje)
-
-	     
-		"""if(contador > 3):
+			
+		if(sensorBotonSalida.estaPresionado() == True):
+			contador -= 1
+			time.sleep(0.5)
+			print(contador)
+			mensaje = formato_json("aforo", contador)
+			cliente.write_points(mensaje)
+			
+		if(contador > 4):
 			sensorBocina.encender()
-			time.sleep(2)
-		 
-			print("Aforo actual: ")
-			aforo = int(input())
-		 
-			if(aforo <= 3):
-				sensorBocina.apagar()
-				contador = aforo"""
+		else:
+			sensorBocina.apagar()"""
+			
 
 
 
